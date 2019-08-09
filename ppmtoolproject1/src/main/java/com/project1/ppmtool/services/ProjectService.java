@@ -1,6 +1,7 @@
 package com.project1.ppmtool.services;
 
 import com.project1.ppmtool.domain.Project;
+import com.project1.ppmtool.exceptions.ProjectIdException;
 import com.project1.ppmtool.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,11 +13,40 @@ public class ProjectService {
     private ProjectRepository projectRepository;
 
     public Project saveOrUpdateProject(Project project){
+        try{
+            project.setProjectIdentifier(project.getProjectIdentifier().toUpperCase());
+            return projectRepository.save(project);
+
+        }catch (Exception e){
+            throw new ProjectIdException("Project ID'"+project.getProjectIdentifier().toUpperCase()+"'already exists");
+        }
 
             //logic
-        return projectRepository.save(project);
+
     }
 
+    public Project findProjectByIdentifier(String projectId){
+        Project project =  projectRepository.findByProjectIdentifier(projectId.toUpperCase());
+        if (project==null){
+            throw new ProjectIdException("Project ID'"+projectId+"'doesnt exists");
+
+        }
+
+        return project;
+    }
+
+
+    public Iterable<Project> findAllProjects(){
+        return projectRepository.findAll();
+    }
+
+    public void deleteProjectByIdentifier(String projectid){
+        Project project = projectRepository.findByProjectIdentifier(projectid.toUpperCase());
+        if(project == null){
+            throw new ProjectIdException("cannot '"+projectid+"'. this doesnt exist");
+        }
+        projectRepository.delete(project);
+    }
 
 
 }
